@@ -1,13 +1,32 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { body, validationResult } from "express-validator";
 
+import { sign } from "jsonwebtoken";
+
 import { models } from "../db";
 const { User } = models;
 
-import { hashPassword } from "../utils/password";
+import { checkPassword, hashPassword } from "../utils/password";
 import { ROLE } from "../utils/enums";
 
+import { verifyJWT } from "../middlewares/authorization";
+
 const router: Router = Router();
+
+const validateParameters = (_req: Request, res: Response): boolean => {
+    const errors = validationResult(_req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).json({
+            data: errors.array(),
+            message: "Invalid parameters",
+        });
+
+        return false;
+    }
+
+    return true;
+};
 
 export default () => {
     router.put(
@@ -26,13 +45,8 @@ export default () => {
                 return true;
             }),
         async (_req: Request, res: Response, _next: NextFunction) => {
-            const errors = validationResult(_req);
-
-            if (!errors.isEmpty()) {
-                return res.status(400).json({
-                    data: errors.array(),
-                    message: "Invalid parameters",
-                });
+            if (!validateParameters(_req, res)) {
+                return;
             }
 
             const { email, password, name, surname, nickName, role, age } =
@@ -72,6 +86,46 @@ export default () => {
                     message: "Something went wrong",
                 });
             }
+        }
+    );
+
+    router.post(
+        "/login",
+        body("email").isEmail(),
+        body("password").isLength({ min: 1 }),
+        async (_req: Request, res: Response, _next: NextFunction) => {
+            if (!validateParameters(_req, res)) {
+                return;
+            }
+
+            const { email, password } = _req.body;
+
+            const user = await User.findOne({
+                where: {
+                    email,
+                },
+            });
+            if (!user) {
+                return res.status(400).json({
+                    data: [],
+                    message: "User not found",
+                });
+            }
+            if (!(await checkPassword(password, user.password))) {
+                return res.status(401).json({
+                    data: [],
+                    message: "Invalid credentials",
+                });
+            }
+
+            const token = sign({ id: user.id }, process.env.JWT_SECRET, {
+                expiresIn: process.env.JWT_EXPIRES_IN || 86400,
+            });
+
+            return res.json({
+                data: { token },
+                message: "User logged in successfully",
+            });
         }
     );
 
