@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { body, validationResult } from "express-validator";
+import { body } from "express-validator";
 
 import { sign } from "jsonwebtoken";
 
@@ -8,25 +8,9 @@ const { User } = models;
 
 import { checkPassword, hashPassword } from "../utils/password";
 import { ROLE } from "../utils/enums";
-
-import { verifyJWT, verifyRole } from "../middlewares/authorization";
+import { validateParameters } from "../utils/validateParameters";
 
 const router: Router = Router();
-
-const validateParameters = (_req: Request, res: Response): boolean => {
-    const errors = validationResult(_req);
-
-    if (!errors.isEmpty()) {
-        res.status(400).json({
-            data: errors.array(),
-            message: "Invalid parameters",
-        });
-
-        return false;
-    }
-
-    return true;
-};
 
 export default () => {
     router.put(

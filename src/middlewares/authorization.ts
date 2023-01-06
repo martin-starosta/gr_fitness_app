@@ -23,14 +23,16 @@ export function verifyJWT(_req: Request, res: Response, next: NextFunction) {
     verify(
         token,
         process.env.JWT_SECRET,
-        function (err: Error, decoded: JwtPayload) {
+        async function (err: Error, decoded: JwtPayload) {
             if (err)
                 return res.status(500).send({
                     auth: false,
                     message: "Failed to authenticate token.",
                 });
 
-            _req.body.userId = decoded.id;
+            const user = await User.findByPk(decoded.id);
+            _req.body.userId = user.id;
+            _req.body.userRole = user.role;
 
             next();
         }
