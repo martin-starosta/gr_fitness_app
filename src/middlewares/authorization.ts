@@ -7,7 +7,8 @@ const { User } = models;
 import { ROLE } from "../utils/enums";
 
 interface JwtPayload {
-    id: string;
+    id: number;
+    role: ROLE;
 }
 
 export function verifyJWT(_req: Request, res: Response, next: NextFunction) {
@@ -30,9 +31,8 @@ export function verifyJWT(_req: Request, res: Response, next: NextFunction) {
                     message: "Failed to authenticate token.",
                 });
 
-            const user = await User.findByPk(decoded.id);
-            _req.body.userId = user.id;
-            _req.body.userRole = user.role;
+            _req.body.userId = decoded.id;
+            _req.body.userRole = decoded.role;
 
             next();
         }
@@ -42,8 +42,7 @@ export function verifyJWT(_req: Request, res: Response, next: NextFunction) {
 export function verifyRole(role: ROLE) {
     return function (_req: Request, res: Response, next: NextFunction) {
         verifyJWT(_req, res, async () => {
-            const user = await User.findByPk(_req.body.userId);
-            if (user.role !== role) {
+            if (_req.body.userRole !== role) {
                 return res.status(401).send({
                     data: [],
                     message: "You don't have permission to access this route",
