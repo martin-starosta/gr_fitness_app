@@ -1,24 +1,29 @@
-import http from 'http'
-import express from 'express'
-import * as bodyParser from 'body-parser'
+import http from "http";
+import express from "express";
+import * as bodyParser from "body-parser";
 
-import { sequelize } from './db'
-import ProgramRouter from './routes/programs'
-import ExerciseRouter from './routes/exercises'
+import { sequelize } from "./db";
+import ProgramRouter from "./routes/programs";
+import ExerciseRouter from "./routes/exercises";
 
-const app = express()
+import dotenv from "dotenv";
+dotenv.config();
 
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
-app.use('/programs', ProgramRouter())
-app.use('/exercises', ExerciseRouter())
+const app = express();
 
-const httpServer = http.createServer(app)
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use("/programs", ProgramRouter());
+app.use("/exercises", ExerciseRouter());
 
-sequelize.sync()
+const httpServer = http.createServer(app);
 
-console.log('Sync database', 'postgresql://localhost:5432/fitness_app')
+sequelize.sync();
 
-httpServer.listen(8000).on('listening', () => console.log(`Server started at port ${8000}`))
+console.log("Sync database", "postgresql://localhost:5432/fitness_app");
 
-export default httpServer
+httpServer
+    .listen(8000)
+    .on("listening", () => console.log(`Server started at port ${8000}`));
+
+export default httpServer;
