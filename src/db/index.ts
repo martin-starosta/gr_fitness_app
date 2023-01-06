@@ -7,6 +7,7 @@ import { Sequelize } from "sequelize";
 import defineExercise from "./exercise";
 import defineProgram from "./program";
 import defineUser from "./user";
+import defineCompletedExercise from "./completed";
 
 const sequelize: Sequelize = new Sequelize(
     "postgresql://postgres:postgres@localhost:5432/fitness_app",
@@ -24,6 +25,10 @@ const modelsBuilder = (instance: Sequelize) => ({
     Exercise: instance.import(path.join(__dirname, "exercise"), defineExercise),
     Program: instance.import(path.join(__dirname, "program"), defineProgram),
     User: instance.import(path.join(__dirname, "user"), defineUser),
+    ComletedExercise: instance.import(
+        path.join(__dirname, "completed"),
+        defineCompletedExercise
+    ),
 });
 
 const models = modelsBuilder(sequelize);
