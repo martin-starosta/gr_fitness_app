@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 
+import { models } from "../db";
+const { User } = models;
+
+import { ROLE } from "../utils/enums";
+
 interface JwtPayload {
     id: string;
 }
@@ -30,4 +35,19 @@ export function verifyJWT(_req: Request, res: Response, next: NextFunction) {
             next();
         }
     );
+}
+
+export function verifyRole(role: ROLE) {
+    return function (_req: Request, res: Response, next: NextFunction) {
+        verifyJWT(_req, res, async () => {
+            const user = await User.findByPk(_req.body.userId);
+            if (user.role !== role) {
+                return res.status(401).send({
+                    data: [],
+                    message: "You don't have permission to access this route",
+                });
+            }
+            next();
+        });
+    };
 }

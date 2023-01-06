@@ -9,7 +9,7 @@ const { User } = models;
 import { checkPassword, hashPassword } from "../utils/password";
 import { ROLE } from "../utils/enums";
 
-import { verifyJWT } from "../middlewares/authorization";
+import { verifyJWT, verifyRole } from "../middlewares/authorization";
 
 const router: Router = Router();
 
