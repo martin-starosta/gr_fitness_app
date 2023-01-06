@@ -5,6 +5,7 @@ import * as bodyParser from "body-parser";
 import { sequelize } from "./db";
 import ProgramRouter from "./routes/programs";
 import ExerciseRouter from "./routes/exercises";
+import AuthRouter from "./routes/auth";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/programs", ProgramRouter());
 app.use("/exercises", ExerciseRouter());
+app.use("/auth", AuthRouter());
 
 const httpServer = http.createServer(app);
 
