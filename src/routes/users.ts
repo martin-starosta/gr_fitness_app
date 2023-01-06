@@ -5,7 +5,7 @@ import { models } from "../db";
 
 const router: Router = Router();
 
-const { User } = models;
+const { User, ComletedExercise, Exercise } = models;
 import { ROLE } from "../utils/enums";
 import { validateParameters } from "../utils/validateParameters";
 
@@ -62,10 +62,26 @@ export default () => {
         const user = await User.findOne({
             where: { id },
             attributes: ADMIN_USER_ATTRIBUTES,
+            raw: true,
+        });
+
+        const userCompletedExercises = await ComletedExercise.findAll({
+            where: { userID: id },
+            attributes: [
+                "id",
+                "exercise.name",
+                "exercise.createdAt",
+                "duration",
+            ],
+            include: [{ model: Exercise, attributes: [] }],
+            raw: true,
         });
 
         return res.json({
-            data: user,
+            data: {
+                ...user,
+                completedExercises: userCompletedExercises,
+            },
             message: "User details",
         });
     });
