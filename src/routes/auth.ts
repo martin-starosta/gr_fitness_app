@@ -112,7 +112,7 @@ export default () => {
 
             return res.json({
                 data: { token },
-                message: "User logged in successfully",
+                message: _req.__("login_success"),
             });
         }
     );
