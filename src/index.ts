@@ -10,6 +10,9 @@ import UserRouter from "./routes/users";
 
 import i18n from "./config/localization";
 
+import "express-async-errors";
+import { errorHandler } from "./middlewares/error.middleware";
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -23,6 +26,7 @@ app.use("/programs", ProgramRouter());
 app.use("/exercises", ExerciseRouter());
 app.use("/auth", AuthRouter());
 app.use("/users", UserRouter());
+app.use(errorHandler);
 
 const httpServer = http.createServer(app);
 

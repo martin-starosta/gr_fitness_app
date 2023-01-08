@@ -1,3 +1,4 @@
 {
-    "login_success": "Login successful"
+    "login_success": "Login successful",
+    "defaultError": "Something went wrong. Please try again later."
 }

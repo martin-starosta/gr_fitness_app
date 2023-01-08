@@ -1,3 +1,4 @@
 {
-    "login_success": "Prihlasenie bolo uspesne"
+    "login_success": "Prihlasenie bolo uspesne",
+    "defaultError": "Nastala chyba, skuste to znovu"
 }
