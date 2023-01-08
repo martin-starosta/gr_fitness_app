@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { body } from "express-validator";
+import { body, query } from "express-validator";
+import { Op } from "sequelize";
 
 import { models } from "../db";
 import { verifyJWT, verifyRole } from "../middlewares/authorization";
@@ -7,9 +8,11 @@ import { verifyJWT, verifyRole } from "../middlewares/authorization";
 const router: Router = Router();
 
 const { Exercise, Program, ComletedExercise } = models;
-import { EXERCISE_DIFFICULTY, ROLE } from "../utils/enums";
+import { EXERCISE_DIFFICULTY, ROLE, ORDER_DIRECTION } from "../utils/enums";
 import { validateParameters } from "../utils/validateParameters";
 import { validateEnumValue } from "../utils/valideEnumValue";
+
+import { ExerciseListQueryParams } from "../types";
 
 const validateProgramID = async (programID: number): Promise<boolean> => {
     const program = await Program.findByPk(programID);
@@ -30,7 +33,35 @@ const validateDataExists = async (id: number, model: any): Promise<boolean> => {
 export default () => {
     router.get(
         "/",
+        query("programID").optional().isInt(),
+        query("limit").optional().isInt(),
+        query("page").optional().isInt(),
+        query("orderBy").optional().isString(),
+        query("orderDirection")
+            .optional()
+            .custom((orderDirection: string) =>
+                validateEnumValue(
+                    orderDirection,
+                    ORDER_DIRECTION,
+                    "orderDirection"
+                )
+            ),
         async (_req: Request, res: Response, _next: NextFunction) => {
+            if (!validateParameters(_req, res)) {
+                return;
+            }
+            const {
+                programID,
+                search,
+                limit: queryLimit,
+                page,
+                orderBy,
+                orderDirection,
+            }: ExerciseListQueryParams = _req.query;
+
+            const offset = page ? (page - 1) * queryLimit : 0;
+            const direction = orderDirection || ORDER_DIRECTION.ASC;
+
             const exercises = await Exercise.findAll({
                 include: [
                     {
@@ -38,6 +69,17 @@ export default () => {
                         as: "program",
                     },
                 ],
+                where: {
+                    ...(programID && { programID: programID }),
+                    ...(search && {
+                        name: {
+                            [Op.like]: `%${search}%`,
+                        },
+                    }),
+                },
+                ...(queryLimit && { limit: queryLimit }),
+                ...(page && { offset }),
+                ...(orderBy && { order: [[orderBy, direction]] }),
             });
 
             return res.json({
